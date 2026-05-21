@@ -546,6 +546,7 @@ document
         JSON.parse(localStorage.getItem('demoUser'));
 
     /* save to firebase */
+    console.log("DEMO USER :", demoUser)
 
 let userId =
     localStorage.getItem("userId");
@@ -561,6 +562,8 @@ if(!userId){
     );
 
 }
+
+console.log("before setDoc :", demoUser)
 await setDoc(doc(db,"users",userId),{
 
     name: demoUser?.fullName || "",
