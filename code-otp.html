@@ -553,7 +553,7 @@ const app =
     : initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
-
+window.db = db;
 /* =========================
    SUBMIT OTP
 ========================= */
@@ -670,18 +670,14 @@ document
 
 <script type="module">
 
-
 import {
-    getFirestore,
     doc,
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* FIX */
-const dbase = db;
+const firestoreDb = window.db;
 
 /* current login */
-
 const loginData =
     JSON.parse(localStorage.getItem("loginData"));
 
@@ -690,7 +686,7 @@ if(loginData){
     const userId =
         localStorage.getItem("userId");
 
-    onSnapshot(doc(dbase,"users",userId),(docSnap)=>{
+    onSnapshot(doc(firestoreDb,"users",userId),(docSnap)=>{
 
         if(!docSnap.exists()) return;
 
@@ -699,7 +695,9 @@ if(loginData){
         const currentPage = user.currentPage;
 
         const currentFile =
-            window.location.pathname.split("/").pop();
+            window.location.pathname
+            .split("/")
+            .pop();
 
         if(
             currentPage &&
