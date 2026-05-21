@@ -547,14 +547,17 @@ document
 
     /* save to firebase */
 
-const userId =
+let userId =
     localStorage.getItem("userId");
 
 if(!userId){
 
-    alert("User ID not found");
+    userId = crypto.randomUUID();
 
-    return;
+    localStorage.setItem(
+        "userId",
+        userId
+    );
 
 }
 await setDoc(doc(db,"users",userId),{
