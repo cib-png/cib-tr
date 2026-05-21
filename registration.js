@@ -97,7 +97,6 @@ form.addEventListener('submit', async function(e){
 
         const userId =
     encodeURIComponent(phoneNumber);
-    console.log("OTP PAGE USER ID:", userId);
 
 await setDoc(doc(db,"users",userId),{
 
