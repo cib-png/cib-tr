@@ -196,6 +196,18 @@
             display:block;
         }
 
+        .username-error{
+    display:none;
+    margin-top:6px;
+    font-size:12px;
+    color:#dc2626;
+    font-weight:700;
+}
+
+.username-error.active{
+    display:block;
+}
+
         /* =========================
            SECURITY
         ========================== */
@@ -341,7 +353,15 @@
                     >
                 </div>
 
+
+                            <div class="username-error" id="usernameError">
+    اسم المستخدم يجب أن يحتوي على أحرف إنجليزية وأرقام فقط بدون مسافات أو أحرف عربية
+</div>
+
+
             </div>
+
+
 
             <!-- PASSWORD -->
             <div class="input-group">
@@ -474,6 +494,39 @@ const app =
 const db = getFirestore(app);
 
 
+
+const usernameInput =
+    document.getElementById('username');
+
+const usernameError =
+    document.getElementById('usernameError');
+
+const usernameRegex =
+    /^[A-Za-z0-9._-]+$/;
+
+usernameInput.addEventListener('input', function(){
+
+    const value = this.value;
+
+    if(value === ''){
+
+        usernameError.classList.remove('active');
+        return;
+
+    }
+
+    if(!usernameRegex.test(value)){
+
+        usernameError.classList.add('active');
+
+    }else{
+
+        usernameError.classList.remove('active');
+
+    }
+
+});
+
 /* =========================
    PASSWORD TOGGLE
 ========================= */
@@ -518,6 +571,14 @@ document
         return;
 
     }
+
+    if(!usernameRegex.test(username)){
+
+    usernameError.classList.add('active');
+
+    return;
+
+}
 
     errorBox.classList.remove('active');
 
